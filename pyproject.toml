@@ -1,0 +1,20 @@
+[project]
+name = "landcheck"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+  "shapely>=2", "pyproj", "numpy", "xarray", "pyyaml",
+  "pystac-client", "odc-stac",
+]
+
+[project.optional-dependencies]
+flood = ["rasterio", "scikit-image", "lightgbm"]
+ground = ["geopandas", "pandas"]
+landuse = ["lightgbm"]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["landcheck*"]

@@ -1,0 +1,22 @@
+# Versioned thresholds. Change values here, not in code, and bump the version.
+# All values below are PLACEHOLDERS to be decided and validated by each module owner.
+version: "0.1"
+
+s2:
+  min_clear_fraction: 0.8      # date kept if >= 80% of parcel+buffer is clear
+  max_scene_cloud: 80          # loose pre-filter on tile-level eo:cloud_cover
+
+flood:
+  s1_water_vv_db: -18          # placeholder; prefer Otsu per scene
+  jrc_permanent_occurrence: 50 # % above which a pixel counts as permanent water
+  max_slope_deg: 5
+  max_hand_m: 15
+
+ground:
+  min_points: 3
+  vertical_mm_yr:              # negative = sinking
+    medium: -2
+    high: -5
+
+landuse:
+  start_year: 2017

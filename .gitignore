@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Data 
+data/
+*.tif
+*.tiff
+*.nc
+*.zarr
+
+# Frontend
+node_modules/
+dist/
+build/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store

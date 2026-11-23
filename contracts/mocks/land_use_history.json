@@ -1,0 +1,13 @@
+{
+  "risk": "land_use_history",
+  "level": "Low",
+  "value": 6,
+  "unit": "years farmed (of 8)",
+  "confidence": 0.8,
+  "summary": "MOCK: Farmed 6 of the last 8 years.",
+  "sources": [
+    { "name": "MOCK Sentinel-2 NDVI", "url": null },
+    { "name": "MOCK ESA WorldCover", "url": "https://esa-worldcover.org/" }
+  ],
+  "date_range": { "start": "2018-01-01", "end": "2025-12-31" }
+}

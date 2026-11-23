@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://landcheck.local/contracts/result.schema.json",
+  "title": "Land Check module result",
+  "description": "Shared result format (requirements section 6.1). Every module returns one or more of these. No data means level Unknown and value null, never Low.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["risk", "level", "value", "unit", "confidence", "summary", "sources", "date_range"],
+  "properties": {
+    "risk": {
+      "description": "Name of the risk.",
+      "type": "string",
+      "enum": ["flood_history", "flood_susceptibility", "ground_stability", "land_use_history"]
+    },
+    "level": {
+      "type": "string",
+      "enum": ["Low", "Medium", "High", "Unknown"]
+    },
+    "value": {
+      "description": "Main number, or null when level is Unknown.",
+      "type": ["number", "null"]
+    },
+    "unit": {
+      "description": "Unit of value, e.g. events, mm/year, years farmed.",
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "description": "PROVISIONAL (open question 6): number from 0 to 1, or null when level is Unknown.",
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "summary": {
+      "description": "One short sentence written by the module, not the LLM.",
+      "type": "string",
+      "minLength": 1
+    },
+    "sources": {
+      "description": "Datasets used.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "url": { "type": ["string", "null"], "format": "uri" }
+        }
+      }
+    },
+    "date_range": {
+      "description": "Start and end of the data used (ISO dates).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "type": "string", "format": "date" },
+        "end": { "type": "string", "format": "date" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "level": { "const": "Unknown" } } },
+      "then": { "properties": { "value": { "type": "null" }, "confidence": { "type": "null" } } },
+      "else": { "properties": { "value": { "type": "number" }, "confidence": { "type": "number" } } }
+    }
+  ]
+}

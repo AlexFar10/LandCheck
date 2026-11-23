@@ -1,0 +1,1 @@
+"""Land Check backend."""

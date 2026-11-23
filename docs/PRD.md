@@ -228,7 +228,7 @@ Pechea also fits the requirement to prefer preprocessed layers that load reliabl
 | Project tracking | No issues, no milestones, no `.github/` templates | Verified |
 | Python core | Parcel, Sentinel-2 helpers, shared result format and config exist | Verified |
 | Tests | 8 of 8 pass from a clean export on Ubuntu 24.04 with Python 3.12 | Verified |
-| CI | Docker CI stage passes in a real WSL image build. GitHub Actions and Coolify runs are pending | Verified |
+| CI | GitHub Actions passes on `dev`, including the container build. A Coolify run is pending | Verified |
 | Risk modules | `flood`, `ground` and `landuse` are stubs that return `Unknown` through the pipeline | Verified |
 | API | Not started | Verified |
 | React frontend | Not started. The root `index.html` is the "under construction" page | Verified |
@@ -990,7 +990,7 @@ As the data pair, we want pinned inputs so that the dataset is reproducible.
 As the team, we want automatic checks on every PR so that broken code cannot reach the live app.
 
 - [ ] `.github/workflows/ci.yml` runs on a PR into `dev`
-- [ ] Python lint and tests pass on the first real run, or failures are fixed
+- [x] Python lint and tests pass on the first real run, or failures are fixed
 - [ ] `CI passed` is a required check on `dev` and `main`
 - [ ] A PR into `main` from a feature branch is rejected
 - [ ] The frontend job activates when `web/` is added

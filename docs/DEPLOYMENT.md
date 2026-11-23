@@ -12,7 +12,7 @@ This is the plan for getting Land Check from GitHub to a live app on Coolify bef
 | Last deployment | Failed because the build could not resolve DNS while downloading Python |
 | Deployable app | An interim `Dockerfile` runs CI and serves the current page. FastAPI and React are not built yet |
 | Auto-deploy | On for `main`, so every push to `main` starts a deployment |
-| CI | The image builds and passes its CI stage in WSL Docker. GitHub Actions and Coolify have not run it yet |
+| CI | GitHub Actions passes on `dev`, including the container build. Coolify has not run it yet. The VPS agent's steps are in [`VPS_AGENT_TASK.md`](VPS_AGENT_TASK.md) |
 
 **Do not merge to `main` until Coolify uses the Dockerfile build pack.** Under Railpack, the repo looks like a Python project with nothing serving port 3000, so a successful build could replace the working page with a broken app.
 

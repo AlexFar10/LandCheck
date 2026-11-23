@@ -20,6 +20,7 @@ Land Check is a map-first geographic hazard screening tool for insurance agencie
 | Python module contract | [`README.md`](README.md) |
 | Pull, set up and run the project | [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) |
 | Coolify deployment, rollback and CI | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Task for the agent on the VPS | [`docs/VPS_AGENT_TASK.md`](docs/VPS_AGENT_TASK.md) |
 
 The research report's Lower Olt product, five-week plan and larger architecture are superseded. Use it for scientific method, not scope.
 

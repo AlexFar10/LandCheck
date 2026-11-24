@@ -9,9 +9,9 @@ The repository has two parts:
 - **Satellite-data core** (`landcheck/`, `config/`, `tests/`): the shared core is implemented and
   tested. Each risk module is a stub that sets out its interface, data sources and steps, for its
   owner to build.
-- **Platform skeleton** (`backend/`, `frontend/`, `contracts/`): the backend returns mock results
-  in the shared result format ([contracts/result.schema.json](contracts/result.schema.json)). It
-  will call the `landcheck/` package once modules are built.
+- **Platform skeleton** (`landcheck/api/`, `web/`): a FastAPI app with the PRD Section 12
+  endpoints and a React + MapLibre map centred on the pilot. The API serves a clearly labelled
+  **sample fixture** until the pilot dataset exists.
 
 ## Layout
 
@@ -20,9 +20,9 @@ The repository has two parts:
 | `landcheck/` | Satellite-data package: core and hazard modules (see below) |
 | `config/` | Versioned thresholds (`thresholds.yaml`, placeholders for now) |
 | `tests/` | Pytest suite for `landcheck/` |
-| `backend/` | FastAPI app (Python 3.12, uv). `GET /health`, `POST /analyze` |
-| `frontend/` | React + Vite + Leaflet map |
-| `contracts/` | Shared result JSON schema and mock results, one per risk |
+| `landcheck/api/` | FastAPI app: `GET /health`, `/api/v1/layers`, `/api/v1/zones`, `/api/v1/zones/{id}` |
+| `web/` | React + Vite + MapLibre map |
+| `contracts/` | Shared module result JSON schema and mock results, one per risk |
 | `docs/` | PRD, addendum, research and setup guides |
 
 ## Satellite-data core
@@ -82,41 +82,29 @@ python -m landcheck.pipeline # demo parcel: all modules return "Unknown" until b
 - Sentinel-1 GRD isn't on EOCube, so the flood module needs Copernicus Data Space.
 - What cadastre access (ANCPI/eTerra) do we have for parcel input?
 
-## Platform (backend and frontend)
+## Platform (API and web app)
 
-### Prerequisites
-
-- [uv](https://docs.astral.sh/uv/) (installs Python 3.12 itself)
-- Node.js 24 and npm
-
-Optional: `cp .env.example .env` in the repo root and adjust. Defaults work for local development.
-
-### Run locally
-
-Backend, on http://localhost:8000 (API docs at http://localhost:8000/docs):
+Full instructions, including the shared-server ports, are in
+[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md). In short (Python 3.10+, Node.js 24):
 
 ```bash
-cd backend && uv sync && uv run uvicorn landcheck.main:app --reload
+pip install -e ".[dev]"                                   # includes the api extra
+uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 3000
+cd web && npm ci && npm run dev -- --host 127.0.0.1       # http://127.0.0.1:5173
 ```
 
-Frontend, on http://localhost:5173:
+The web dev server proxies `/api` and `/health` to the API on `PORT`. API docs are at
+http://127.0.0.1:3000/docs.
+
+### Checks
 
 ```bash
-cd frontend && npm install && npm run dev
-```
-
-Draw a polygon with the map's polygon tool, then click **Analyze**.
-
-### Checks (same as CI)
-
-```bash
-cd backend && uv run ruff check . && uv run ruff format --check . && uv run pytest
-cd frontend && npm run lint && npm test && npm run build
+pytest
+cd web && npm run lint && npm test && npm run build
 ```
 
 ## Configuration
 
-All configuration is through environment variables (or the repo-root `.env`). See
-[.env.example](.env.example). Data-provider credentials stay server-side. On a Linux server, run
-the backend with `uv run uvicorn landcheck.main:app --host 0.0.0.0 --port 8000` and set
-`VITE_API_URL` before `npm run build`.
+All configuration is through environment variables (or the repo-root `.env`), as listed in PRD
+Section 11.5. See [.env.example](.env.example). Data-provider credentials stay server-side. In a
+container, `python -m landcheck.api` binds `0.0.0.0:${PORT:-3000}`.

@@ -8,16 +8,17 @@ Follow this guide to pull the project, run it and start working on an issue.
 |---|---|
 | Python core and tests | Works |
 | Hazard modules | Stubs that return `Unknown` |
-| FastAPI backend | Not built yet (LC-06) |
-| React frontend | Not built yet (LC-07) |
+| API (`landcheck/api/`) | Skeleton with the PRD Section 12 endpoints. Serves a labelled **sample fixture**, not real data |
+| Web app (`web/`) | React + MapLibre skeleton centred on Pechea. Lists layers from the API |
 
 ## 2. Requirements
 
 - Git
 - Python 3.10 or newer (3.12 is recommended)
+- Node.js 24 and npm, for the web app
 - Linux, macOS or WSL on Windows
 
-Node.js 24 and Docker will be needed once the frontend and container are added.
+Docker is only needed to test the production container.
 
 **On Windows, use WSL.** Clone the project inside your WSL home folder (`~/`), not under `/mnt/c`. It runs faster and avoids line-ending problems. Use the Docker engine inside WSL as well, not Docker on Windows.
 
@@ -42,7 +43,9 @@ pytest
 python -m landcheck.pipeline
 ```
 
-You should see **8 passed**. The pipeline prints four results with level `Unknown`, which is correct until the modules are built.
+You should see **49 passed**: the core tests, the API tests and the result-schema tests. The pipeline prints four results with level `Unknown`, which is correct until the modules are built.
+
+The `dev` extra includes the API dependencies (`api` extra), so one install covers both.
 
 ## 5. Credentials
 
@@ -134,18 +137,50 @@ Replace the ports with yours. Get the server address from the team's private not
 
 ## 8. Running the full app
 
-These commands become available after LC-06 and LC-07. The `api` extra and `web/` folder do not exist yet.
+The API and the web app run in two terminals. The web dev server proxies `/api` and `/health` to the API on `PORT`, so the browser sees one origin, as in production. No CORS setup is needed.
 
 ```bash
-# Terminal 1: API
+# Terminal 1: API on http://127.0.0.1:3000 (docs at /docs)
 . .venv/bin/activate
-pip install -e ".[api,dev]"
-uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 18001
+uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 3000
 
-# Terminal 2: frontend
+# Terminal 2: web app on http://127.0.0.1:5173
 cd web
 npm ci
-npm run dev -- --host 127.0.0.1 --port 15171
+npm run dev -- --host 127.0.0.1
+```
+
+Open http://127.0.0.1:5173. You should see an OpenStreetMap basemap centred on Pechea, with the attribution in the bottom-right corner, a dashed sample coverage boundary, and a purple **SAMPLE DATA** banner in the side panel.
+
+Check the API directly:
+
+```bash
+curl http://127.0.0.1:3000/health
+curl "http://127.0.0.1:3000/api/v1/layers"
+curl "http://127.0.0.1:3000/api/v1/zones?bbox=27.70,45.55,27.90,45.70"
+curl "http://127.0.0.1:3000/api/v1/zones/sample_flood_history_v0-0001"
+```
+
+If the API is not running, the side panel shows "Cannot reach the Land Check API" instead of the layer list.
+
+To call the API directly instead of through the proxy, set both `VITE_API_URL=http://127.0.0.1:3000` and `LANDCHECK_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173` in `.env`, then restart both apps.
+
+`/health` reports `"dataset_id": "sample-fixture"` and `"sample": true`. Everything the API returns today is invented sample data from `landcheck/api/fixtures/sample/`. Set `LANDCHECK_DATASET_DIR` to serve a real dataset once one exists.
+
+`python -m landcheck.api` starts the API the way production does: on `0.0.0.0` and port `PORT` (default 3000). Use it only in a container, not on the shared server.
+
+**On the shared server,** port 3000 is reserved. Put your assigned API port in your own `.env` as `PORT=18001` (example for Raul), so the web proxy follows it, then run:
+
+```bash
+uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 18001
+cd web && npm run dev -- --host 127.0.0.1 --port 15171
+```
+
+### Checks before a PR
+
+```bash
+pytest
+cd web && npm run lint && npm test && npm run build
 ```
 
 To test the production container, see [Step 4 of the deployment plan](DEPLOYMENT.md#step-4-test-the-container-locally).
@@ -155,6 +190,9 @@ To test the production container, see [Step 4 of the deployment plan](DEPLOYMENT
 | Problem | Fix |
 |---|---|
 | `No module named landcheck` | Activate `.venv` and run `pip install -e ".[dev]"` |
+| `No module named fastapi` | Reinstall with `pip install -e ".[dev]"`. The `dev` extra now includes the API |
+| Web app shows "Request to /health failed (502)" or similar | The API is not running, or `PORT` in `.env` does not match the API's port |
+| `/health` returns 503 with `"status": "error"` | `LANDCHECK_DATASET_DIR` points to a missing or invalid dataset. The API log says why |
 | Every file shows as modified in WSL | The clone is shared with Windows. Clone inside WSL, or run `git config core.autocrlf true` in that checkout |
 | `pip` fails with "No space left on device" | Free disk space, or use a clone on a drive with space |
 | Port is already in use | Use your assigned port |

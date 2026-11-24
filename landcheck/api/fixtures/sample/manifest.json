@@ -1,0 +1,27 @@
+{
+  "dataset_id": "sample-fixture",
+  "dataset_version": "fixture-0",
+  "method_version": "fixture-0",
+  "sample": true,
+  "layers": [
+    {
+      "layer_id": "sample_flood_history_v0",
+      "title": "SAMPLE DATA: flood extent placeholder (not real)",
+      "hazard_type": "flood_history",
+      "default_visible": true,
+      "observation_date": "2000-01-01",
+      "sensor": null,
+      "source_name": "Land Check sample fixture (not real data)",
+      "source_url": "https://github.com/AlexFar10/LandCheck/blob/dev/landcheck/api/fixtures/README.md",
+      "attribution": "Sample fixture made by the Land Check team. No real source.",
+      "meaning": "Placeholder polygons for API and UI development. They do not show any real flood.",
+      "limitations": [
+        "Sample data. The geometry, date and status are invented for development.",
+        "Never show these polygons as results in a demo."
+      ],
+      "legend": [
+        { "label": "Sample polygon (not real)", "color": "#9333EA" }
+      ]
+    }
+  ]
+}

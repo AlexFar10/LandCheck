@@ -26,10 +26,10 @@ The research report's Lower Olt product, five-week plan and larger architecture 
 
 ## Current state
 
-- `landcheck/` (repo root) is the satellite-data package. `backend/` does not import it yet and will call it later, once modules are built.
+- `landcheck/` (repo root) is the satellite-data package. The API in `landcheck/api/` does not call the modules yet.
 - Built: `landcheck/core/` and its tests.
 - Stubs: `landcheck/modules/flood.py`, `ground.py`, `landuse.py`.
-- Skeleton: FastAPI app in `backend/` and React map in `frontend/`. The backend serves mock results from `contracts/mocks/` via `POST /analyze`, which is not yet the PRD Section 12 API.
+- Skeleton: FastAPI app in `landcheck/api/` with the PRD Section 12 endpoints, and React + MapLibre map in `web/`. The API serves a labelled sample fixture from `landcheck/api/fixtures/sample/` until the pilot dataset exists.
 - Not started: pilot dataset, working deployment.
 - CI: `.github/workflows/ci.yml` runs on `dev` and `main`. The `ci` stage in `Dockerfile` makes lint and test results visible in Coolify build logs, so keep its `COPY --from=ci` dependency.
 - Before using Sentinel-2 output, read defects D1 and D3 in PRD Section 6.2. `s2.offset_for_item` currently returns the wrong offset for many EOCube items.
@@ -48,19 +48,17 @@ python -m landcheck.pipeline   # all modules return Unknown until built
 
 If one checkout is shared between Windows and WSL, WSL Git can report every file as modified because of CRLF line endings. Run `git config core.autocrlf true` in that checkout, or keep a separate clone inside WSL. Do not commit line-ending-only changes.
 
-Backend and frontend (see [README.md](README.md)):
+API and web app (see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)). The `dev` extra above already installs the API dependencies, and `pytest` runs the API tests:
 
 ```bash
-# Backend
-cd backend
-uv sync
-uv run uvicorn landcheck.main:app --reload
-uv run ruff check . && uv run ruff format --check . && uv run pytest
+# API on http://127.0.0.1:3000, OpenAPI docs at /docs
+uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 3000
+python -m landcheck.api        # production style: 0.0.0.0:${PORT:-3000}
 
-# Frontend
-cd frontend
-npm install
-npm run dev
+# Web app on http://127.0.0.1:5173, proxies /api and /health to the API on PORT
+cd web
+npm ci
+npm run dev -- --host 127.0.0.1
 npm run lint && npm test && npm run build
 ```
 
@@ -75,13 +73,13 @@ landcheck/core/          Shared parcel, Sentinel-2, output and config code
 landcheck/modules/       Hazard modules
 landcheck/pipeline.py    Runs all modules on one parcel
 tests/                   Pytest suite for landcheck/
-backend/                 FastAPI app (uv project, own pyproject.toml and tests)
-frontend/                React + Vite + Leaflet map
+landcheck/api/           FastAPI app (PRD Section 12) and its sample fixture
+web/                     React + Vite + MapLibre map
 contracts/               Shared result JSON schema and mock results, one per risk
 index.html               Current "under construction" page
 ```
 
-Proposed additions are `landcheck/api/`, `landcheck/ingest/`, `web/` and `datasets/`. Do not put versioned pilot data under `data/`, because `.gitignore` excludes it.
+Proposed additions are `landcheck/ingest/` and `datasets/`. Do not put versioned pilot data under `data/`, because `.gitignore` excludes it.
 
 ## Product and science rules
 

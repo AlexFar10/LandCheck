@@ -1,0 +1,15 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "layer_id": "sample_flood_history_v0" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [27.72, 45.58], [27.88, 45.58], [27.88, 45.68], [27.72, 45.68], [27.72, 45.58]
+        ]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "sample_flood_history_v0-0001",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [27.77, 45.62], [27.78, 45.62], [27.78, 45.627], [27.77, 45.627], [27.77, 45.62]
+        ]]
+      },
+      "properties": {
+        "layer_id": "sample_flood_history_v0",
+        "hazard_type": "flood_history",
+        "classification": null,
+        "measurement": null,
+        "unit": null,
+        "observation_date": "2000-01-01",
+        "source_name": "Land Check sample fixture (not real data)",
+        "source_url": "https://github.com/AlexFar10/LandCheck/blob/dev/landcheck/api/fixtures/README.md",
+        "coverage_status": "observed",
+        "method_version": "fixture-0",
+        "dataset_version": "fixture-0",
+        "sample": true
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "sample_flood_history_v0-0002",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [27.81, 45.64], [27.82, 45.64], [27.82, 45.645], [27.81, 45.645], [27.81, 45.64]
+        ]]
+      },
+      "properties": {
+        "layer_id": "sample_flood_history_v0",
+        "hazard_type": "flood_history",
+        "classification": null,
+        "measurement": null,
+        "unit": null,
+        "observation_date": "2000-01-01",
+        "source_name": "Land Check sample fixture (not real data)",
+        "source_url": "https://github.com/AlexFar10/LandCheck/blob/dev/landcheck/api/fixtures/README.md",
+        "coverage_status": "observed",
+        "method_version": "fixture-0",
+        "dataset_version": "fixture-0",
+        "sample": true
+      }
+    }
+  ]
+}

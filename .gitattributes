@@ -1,0 +1,2 @@
+# Normalise line endings so files work the same on Windows and the Linux VPS.
+* text=auto eol=lf

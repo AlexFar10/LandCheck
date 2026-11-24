@@ -1,0 +1,39 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #1d1d1f;
+  background: #fff;
+}
+body { margin: 0; }
+.app { display: grid; grid-template-columns: 1fr 380px; height: 100vh; }
+.map { height: 100%; width: 100%; }
+.panel { padding: 16px; overflow-y: auto; border-left: 1px solid #ddd; }
+.panel h1 { margin: 0 0 4px; font-size: 1.4rem; }
+.lede, .meta { color: #555; margin: 0 0 12px; font-size: 0.9rem; }
+.error { color: #b00020; }
+/* Sample data must never look like a real result. */
+.sample-banner {
+  background: #f3e8ff;
+  border: 2px dashed #9333ea;
+  border-radius: 6px;
+  padding: 8px;
+  font-weight: 600;
+}
+.badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #9333ea;
+  color: #fff;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+.layers { list-style: none; padding: 0; }
+.layers > li { border: 1px solid #ddd; border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+.layers dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 8px; margin: 8px 0; }
+.layers dt { color: #555; }
+.layers dd { margin: 0; }
+.limitations { padding-left: 18px; font-size: 0.9rem; color: #444; }
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 60vh auto; }
+  .panel { border-left: 0; border-top: 1px solid #ddd; }
+}

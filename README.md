@@ -1,6 +1,30 @@
-# Land Check: pipeline skeleton
+# Land Check
 
-The shared core is implemented and tested. Each risk module is a stub that sets out its interface, data sources and steps, for its owner to build.
+Select an area on a map and get a risk report on floods, ground stability and land-use history
+from satellite data. Requirements, API contract and decisions: [docs/PRD.md](docs/PRD.md).
+Pilot zone: Pechea, Galați County (PRD decision D-01).
+
+The repository has two parts:
+
+- **Satellite-data core** (`landcheck/`, `config/`, `tests/`): the shared core is implemented and
+  tested. Each risk module is a stub that sets out its interface, data sources and steps, for its
+  owner to build.
+- **Platform skeleton** (`landcheck/api/`, `web/`): a FastAPI app with the PRD Section 12
+  endpoints and a React + MapLibre map centred on the pilot. The API serves a clearly labelled
+  **sample fixture** until the pilot dataset exists.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `landcheck/` | Satellite-data package: core and hazard modules (see below) |
+| `config/` | Versioned thresholds (`thresholds.yaml`, placeholders for now) |
+| `tests/` | Pytest suite for `landcheck/` |
+| `landcheck/api/` | FastAPI app: `GET /health`, `/api/v1/layers`, `/api/v1/zones`, `/api/v1/zones/{id}` |
+| `web/` | React + Vite + MapLibre map |
+| `docs/` | PRD, addendum, research and setup guides |
+
+## Satellite-data core
 
 ```
 landcheck/
@@ -19,7 +43,7 @@ landcheck/
 └── tests/test_core.py
 ```
 
-## The contract
+### The contract
 
 Each module exposes exactly this:
 
@@ -32,7 +56,7 @@ def run(parcel: Parcel) -> list[ModuleResult]: ...
 
 `ModuleResult` has these fields: `risk, level (Low/Medium/High/Unknown), value, unit, confidence, summary, sources, date_range, method_version, details`.
 
-## Rules everyone follows
+### Rules everyone follows
 
 1. **Coordinates:** store in WGS84 as (lon, lat), measure in the parcel's UTM zone. Never hard-code a zone: Romania has zones 34 and 35.
 2. **Provenance:** every result lists the scene or dataset IDs and dates it used.
@@ -42,7 +66,7 @@ def run(parcel: Parcel) -> list[ModuleResult]: ...
 6. **Validation:** hold out whole basins, regions or years. Never split pixels randomly.
 7. **Changes to `core/`** go through its owner (PR review).
 
-## Run
+### Run
 
 ```bash
 pip install -e ".[dev]"
@@ -50,9 +74,36 @@ pytest                       # core tests
 python -m landcheck.pipeline # demo parcel: all modules return "Unknown" until built
 ```
 
-## Open questions
+### Open questions
 
 - Do EOCube's COGs carry the +1000 offset in `raster:bands`? `s2.offset_for_item` handles both cases. Confirm on one post-2022 item.
 - Do EOCube's terms allow commercial use?
 - Sentinel-1 GRD isn't on EOCube, so the flood module needs Copernicus Data Space.
 - What cadastre access (ANCPI/eTerra) do we have for parcel input?
+
+## Platform (API and web app)
+
+Full instructions, including the shared-server ports, are in
+[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md). In short (Python 3.10+, Node.js 24):
+
+```bash
+pip install -e ".[dev]"                                   # includes the api extra
+uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 3000
+cd web && npm ci && npm run dev -- --host 127.0.0.1       # http://127.0.0.1:5173
+```
+
+The web dev server proxies `/api` and `/health` to the API on `PORT`. API docs are at
+http://127.0.0.1:3000/docs.
+
+### Checks
+
+```bash
+pytest
+cd web && npm run lint && npm test && npm run build
+```
+
+## Configuration
+
+All configuration is through environment variables (or the repo-root `.env`), as listed in PRD
+Section 11.5. See [.env.example](.env.example). Data-provider credentials stay server-side. In a
+container, `python -m landcheck.api` binds `0.0.0.0:${PORT:-3000}`.

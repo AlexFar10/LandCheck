@@ -26,9 +26,11 @@ The research report's Lower Olt product, five-week plan and larger architecture 
 
 ## Current state
 
+- `landcheck/` (repo root) is the satellite-data package. The API in `landcheck/api/` does not call the modules yet.
 - Built: `landcheck/core/` and its tests.
 - Stubs: `landcheck/modules/flood.py`, `ground.py`, `landuse.py`.
-- Not started: FastAPI app, React app, pilot dataset, working deployment.
+- Skeleton: FastAPI app in `landcheck/api/` with the PRD Section 12 endpoints, and React + MapLibre map in `web/`. The API serves a labelled sample fixture from `landcheck/api/fixtures/sample/` until the pilot dataset exists.
+- Not started: pilot dataset, working deployment.
 - CI: `.github/workflows/ci.yml` runs on `dev` and `main`. The `ci` stage in `Dockerfile` makes lint and test results visible in Coolify build logs, so keep its `COPY --from=ci` dependency.
 - Before using Sentinel-2 output, read defects D1 and D3 in PRD Section 6.2. `s2.offset_for_item` currently returns the wrong offset for many EOCube items.
 
@@ -46,7 +48,21 @@ python -m landcheck.pipeline   # all modules return Unknown until built
 
 If one checkout is shared between Windows and WSL, WSL Git can report every file as modified because of CRLF line endings. Run `git config core.autocrlf true` in that checkout, or keep a separate clone inside WSL. Do not commit line-ending-only changes.
 
-Frontend and API commands do not exist yet. Add them here when they are created. `docker build -t landcheck:local .` builds the interim image and runs lint and tests. On Windows, use the Docker engine inside WSL.
+API and web app (see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)). The `dev` extra above already installs the API dependencies, and `pytest` runs the API tests:
+
+```bash
+# API on http://127.0.0.1:3000, OpenAPI docs at /docs
+uvicorn landcheck.api.main:app --reload --host 127.0.0.1 --port 3000
+python -m landcheck.api        # production style: 0.0.0.0:${PORT:-3000}
+
+# Web app on http://127.0.0.1:5173, proxies /api and /health to the API on PORT
+cd web
+npm ci
+npm run dev -- --host 127.0.0.1
+npm run lint && npm test && npm run build
+```
+
+`docker build -t landcheck:local .` builds the interim image and runs lint and tests. On Windows, use the Docker engine inside WSL.
 
 ## Repository map
 
@@ -56,11 +72,13 @@ docs/                    PRD, addendum and research
 landcheck/core/          Shared parcel, Sentinel-2, output and config code
 landcheck/modules/       Hazard modules
 landcheck/pipeline.py    Runs all modules on one parcel
-tests/                   Pytest suite
+tests/                   Pytest suite for landcheck/
+landcheck/api/           FastAPI app (PRD Section 12) and its sample fixture
+web/                     React + Vite + MapLibre map
 index.html               Current "under construction" page
 ```
 
-Proposed additions are `landcheck/api/`, `landcheck/ingest/`, `web/` and `datasets/`. Do not put versioned pilot data under `data/`, because `.gitignore` excludes it.
+Proposed additions are `landcheck/ingest/` and `datasets/`. Do not put versioned pilot data under `data/`, because `.gitignore` excludes it.
 
 ## Product and science rules
 
@@ -74,6 +92,7 @@ These rules are mandatory.
 6. **Sample data must be labelled.** Illustrative numbers must never appear as real results.
 7. **The app is a screening tool.** Do not claim engineering, legal, underwriting, premium or actuarial conclusions.
 8. **The demo uses precomputed data.** A user click must not trigger satellite processing.
+9. **The LLM never computes risk.** It only explains module results. It does not set or change levels, values or dates.
 
 ## Geospatial rules
 
@@ -124,11 +143,15 @@ If the contract must change, update the PRD, backend and frontend in the same PR
 - Rebase on the latest `dev` before merging. Keep PRs reviewable within a day.
 - PRs include the issue reference, tests run, screenshots for UI changes and the reviewer.
 - Agents commit, push or open PRs only when asked.
+- Stay in scope of the issue. List other problems in your final message instead of fixing them.
+- Every change comes with tests.
+- Never edit code on the VPS directly. Changes reach the server only through git.
 
 **Review pairs:** Ceca reviews Raul's requirements and issues. Alexandra and Emilia review each other. Stefana and Alexandru review each other. Bianca and available teammates cross-review infrastructure and workflow changes.
 
 ## Security
 
+- Secrets live only in `.env`, never in code, tests, commits or logs. `.env.example` lists every variable name with safe example values.
 - **This repository is public.** Never commit secrets, `.env` files, server IPs, internal URLs, open-port details or infrastructure notes.
 - Upstream credentials stay server-side and never reach the frontend bundle.
 - Validate API inputs. Do not accept user-supplied file paths, asset URLs or GDAL paths.
@@ -137,7 +160,7 @@ If the contract must change, update the PRD, backend and frontend in the same PR
 
 ## Before finishing work
 
-1. Run `pytest` and any checks for the area you changed.
+1. Run `pytest` and the backend and frontend checks for the parts you changed, and report the actual results.
 2. For UI changes, run the app and check the affected states.
 3. For data changes, compare values with the source and update the manifest.
 4. Update the PRD or this file if behavior, commands or decisions changed.

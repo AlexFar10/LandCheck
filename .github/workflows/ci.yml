@@ -20,15 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      frontend: ${{ steps.parts.outputs.frontend }}
-      backend: ${{ steps.parts.outputs.backend }}
+      web: ${{ steps.parts.outputs.web }}
       docker: ${{ steps.parts.outputs.docker }}
     steps:
       - uses: actions/checkout@v4
       - id: parts
         run: |
-          if [ -f frontend/package-lock.json ]; then echo "frontend=true" >> "$GITHUB_OUTPUT"; else echo "frontend=false" >> "$GITHUB_OUTPUT"; fi
-          if [ -f backend/uv.lock ]; then echo "backend=true" >> "$GITHUB_OUTPUT"; else echo "backend=false" >> "$GITHUB_OUTPUT"; fi
+          if [ -f web/package-lock.json ]; then echo "web=true" >> "$GITHUB_OUTPUT"; else echo "web=false" >> "$GITHUB_OUTPUT"; fi
           if [ -f Dockerfile ]; then echo "docker=true" >> "$GITHUB_OUTPUT"; else echo "docker=false" >> "$GITHUB_OUTPUT"; fi
 
   promotion:
@@ -97,39 +95,22 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
 
-  backend:
-    name: Backend (lint, format, test)
+  web:
+    name: Build frontend
     needs: detect
-    if: needs.detect.outputs.backend == 'true'
+    if: needs.detect.outputs.web == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
-      - run: uv sync --locked
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest
-
-  frontend:
-    name: Frontend (lint, test, build)
-    needs: detect
-    if: needs.detect.outputs.frontend == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: frontend
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run lint --if-present
       - run: npm run typecheck --if-present
@@ -163,7 +144,7 @@ jobs:
   ci-passed:
     name: CI passed
     if: always()
-    needs: [detect, promotion, repo-safety, lint, test, backend, frontend, docker]
+    needs: [detect, promotion, repo-safety, lint, test, web, docker]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

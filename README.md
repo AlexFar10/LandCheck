@@ -22,7 +22,6 @@ The repository has two parts:
 | `tests/` | Pytest suite for `landcheck/` |
 | `landcheck/api/` | FastAPI app: `GET /health`, `/api/v1/layers`, `/api/v1/zones`, `/api/v1/zones/{id}` |
 | `web/` | React + Vite + MapLibre map |
-| `contracts/` | Shared module result JSON schema and mock results, one per risk |
 | `docs/` | PRD, addendum, research and setup guides |
 
 ## Satellite-data core

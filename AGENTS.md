@@ -75,7 +75,6 @@ landcheck/pipeline.py    Runs all modules on one parcel
 tests/                   Pytest suite for landcheck/
 landcheck/api/           FastAPI app (PRD Section 12) and its sample fixture
 web/                     React + Vite + MapLibre map
-contracts/               Shared result JSON schema and mock results, one per risk
 index.html               Current "under construction" page
 ```
 
@@ -94,7 +93,6 @@ These rules are mandatory.
 7. **The app is a screening tool.** Do not claim engineering, legal, underwriting, premium or actuarial conclusions.
 8. **The demo uses precomputed data.** A user click must not trigger satellite processing.
 9. **The LLM never computes risk.** It only explains module results. It does not set or change levels, values or dates.
-10. **One shared result format.** Module output follows `contracts/result.schema.json` (see `contracts/README.md`). The frontend never depends on one module's special format.
 
 ## Geospatial rules
 

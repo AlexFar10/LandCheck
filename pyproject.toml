@@ -13,7 +13,7 @@ flood = ["rasterio", "scikit-image", "lightgbm"]
 ground = ["geopandas", "pandas"]
 landuse = ["lightgbm"]
 # dev includes api so that `pip install -e ".[dev]" && pytest` also runs the API tests.
-dev = ["landcheck[api]", "pytest", "httpx", "jsonschema"]
+dev = ["landcheck[api]", "pytest", "httpx"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

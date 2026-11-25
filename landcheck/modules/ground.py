@@ -19,14 +19,12 @@ from __future__ import annotations
 
 import csv
 import os
-import statistics
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
 import shapely
-from pyproj import Transformer
 
 from landcheck.core import ModuleResult, Parcel, Source, no_coverage
 from landcheck.core.config import thresholds

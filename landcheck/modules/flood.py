@@ -28,7 +28,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-import shapely
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union

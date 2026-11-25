@@ -1,6 +1,5 @@
 """Tests for the CEMS ingest (PRD Section 7.5)."""
 
-import hashlib
 import shutil
 from pathlib import Path
 

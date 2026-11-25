@@ -555,3 +555,8 @@ The checksums of the Earth Engine files will not be identical if you export them
 | Land-use history before 2018 | Corrected Sentinel-2 (L2A) has few images over Europe before 2018 |
 | Copying the EGMS points one by one | No longer needed: the tile download gives all the points |
 | ML model | We have a single event. A model needs many floods from many areas to learn something correct |
+
+## Related documents
+
+- `GUIDE_PECHEA_SCRIPTS.md`: what the ingest scripts and modules do with this data, file by file.
+- `PRD.md`, section 7: data sources, pins and ingest rules.

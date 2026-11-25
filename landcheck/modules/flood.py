@@ -15,8 +15,9 @@ flood_history (this version)
     * covered, but nothing mapped   -> "Unknown" ("not observed" is never "Low")
     * not covered by any image      -> "Unknown", no coverage
 
-Later steps (separate scripts): permanent-water, terrain and rainfall context
-from JRC, Copernicus DEM and ANM.
+Context (landcheck.modules.flood_context): rain before the image (ANM), terrain (Copernicus DEM)
+and permanent water (JRC) are added to details["context"]. They never change the level. Rain and
+permanent water also add one plain sentence when the parcel was mapped as flooded.
 """
 from __future__ import annotations
 
@@ -33,6 +34,7 @@ from shapely.geometry.base import BaseGeometry
 from shapely.ops import unary_union
 
 from landcheck.core import ModuleResult, Parcel, Source, no_coverage
+from landcheck.modules import flood_context
 from landcheck.core.parcel import WGS84, _reproject
 
 RISKS = ("flood_history", "flood_susceptibility")
@@ -90,7 +92,8 @@ def _measure_layer(parcel: Parcel, meta: dict[str, Any], coverage: BaseGeometry,
     }
 
 
-def flood_history(parcel: Parcel, root: Path | None = None) -> ModuleResult:
+def flood_history(parcel: Parcel, root: Path | None = None,
+                  context_dir: Path | None = None) -> ModuleResult:
     root = root or dataset_dir()
     if not (root / "manifest.json").is_file():
         return no_coverage("flood_history", f"flood dataset not found at {root}")
@@ -112,15 +115,23 @@ def flood_history(parcel: Parcel, root: Path | None = None) -> ModuleResult:
                   details={"layers": layers, "dataset_version": manifest["dataset_version"]})
 
     flooded = [x for x in seen if x["status"] == "observed"]
+    worst = max(flooded, key=lambda x: x["flooded_pct"]) if flooded else None
+    on = date.fromisoformat((worst or max(seen, key=lambda x: x["observation_date"]))["observation_date"])
+    context = flood_context.describe(parcel, on, context_dir)
+    if context:
+        common["details"]["context"] = context
     if flooded:
-        worst = max(flooded, key=lambda x: x["flooded_pct"])
         full = all(x["covered_pct"] >= 99.0 for x in seen)
+        extra = [t for t in (flood_context.rain_sentence(context["rain"]) if "rain" in context else None,
+                             flood_context.permanent_water_sentence(context["permanent_water"])
+                             if "permanent_water" in context else None) if t]
         return ModuleResult(
             risk="flood_history", level="High", value=worst["flooded_pct"], unit="% of parcel",
             confidence="High" if full else "Medium",
             summary=(f"Flooding was mapped on {worst['flooded_pct']}% of this parcel on "
                      f"{worst['observation_date']} ({worst['sensor']}). It is one satellite image, "
-                     "not the flood peak, and it says nothing about other floods."),
+                     "not the flood peak, and it says nothing about other floods."
+                     + "".join(" " + t for t in extra)),
             **common)
     return ModuleResult(
         risk="flood_history", level="Unknown", value=None, unit=None, confidence="Low",

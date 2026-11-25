@@ -11,6 +11,7 @@ dependencies = [
 api = ["fastapi", "uvicorn[standard]", "pydantic-settings>=2"]
 flood = ["rasterio", "scikit-image", "lightgbm"]
 ground = ["geopandas", "pandas"]
+ingest = ["geopandas"]
 landuse = ["lightgbm"]
 # dev includes api so that `pip install -e ".[dev]" && pytest` also runs the API tests.
 dev = ["landcheck[api]", "pytest", "httpx"]

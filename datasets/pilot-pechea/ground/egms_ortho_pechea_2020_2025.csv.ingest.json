@@ -1,0 +1,66 @@
+{
+  "created_at": "2026-11-25T15:36:10+00:00",
+  "cross_check_explorer_averages": [
+    {
+      "dataset": "Vertical",
+      "difference_mm_yr": -0.004,
+      "easting": 5695653.93700787,
+      "file": "egms_pechea_medie_508_vertical.txt",
+      "mean_velocity": -0.6976378,
+      "nearest_k_mean_velocity": -0.702,
+      "nearest_k_used": 508,
+      "northing": 2667241.73228346,
+      "points": 508,
+      "radius_m": 1603
+    },
+    {
+      "dataset": "East/West",
+      "difference_mm_yr": 0.013,
+      "easting": 5695584.88372093,
+      "file": "egms_pechea_east_west.txt",
+      "mean_velocity": 0.03059034,
+      "nearest_k_mean_velocity": 0.043,
+      "nearest_k_used": 559,
+      "northing": 2667244.45438283,
+      "points": 559,
+      "radius_m": 1755
+    }
+  ],
+  "dataset_id": "egms-ortho-l3-pechea",
+  "inputs": {
+    "EGMS_L3_E56N26_100km_E_2020_2025_1.csv": "2ecab78f10dfbfc2db7f8c2c63bdbbf9c3d4c94314f7daf600864a08d97e6bcd",
+    "EGMS_L3_E56N26_100km_U_2020_2025_1.csv": "50e7dc9c8fe5a74bb83b3cef17463ec1d1a5e73fcd1b150bd62d89357ff9b575",
+    "EGMS_L3_E57N26_100km_E_2020_2025_1.csv": "9093b42afffeacf733d918a2e1eadd6157a786d75fada4ebd4d99bc05d830cb9",
+    "EGMS_L3_E57N26_100km_U_2020_2025_1.csv": "8596fc8cae8105943b2df5679c007e4fcb244fba1ae63480f814c0d6b58d6f41"
+  },
+  "median_vertical_mm_yr": -0.6,
+  "output_sha256": "05995af9977b430db2874280e72f53d2501ecf0d4141d61de7c39cbfbaddf189",
+  "per_tile": {
+    "E56N26": {
+      "east_west_points": 8691,
+      "vertical_points": 8691,
+      "without_east_west": 0
+    },
+    "E57N26": {
+      "east_west_points": 5917,
+      "vertical_points": 5917,
+      "without_east_west": 0
+    }
+  },
+  "points": 14608,
+  "points_without_east_west": 0,
+  "source_crs": "EPSG:3035",
+  "zone_bounds_epsg3035": [
+    5674379,
+    2641357,
+    5710242,
+    2685137
+  ],
+  "zone_bounds_wgs84": [
+    27.45581,
+    45.44788,
+    28.03166,
+    45.7531
+  ],
+  "zone_buffer_km": 5.0
+}

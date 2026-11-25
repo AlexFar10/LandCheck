@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-rasterio = pytest.importorskip("rasterio")
+rasterio = pytest.importorskip("rasterio", exc_type=ImportError)
 
 from rasterio.transform import from_origin  # noqa: E402
 from shapely.geometry import box, mapping  # noqa: E402

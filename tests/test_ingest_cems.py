@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("geopandas")
+pytest.importorskip("geopandas", exc_type=ImportError)
 
 from shapely.geometry import Polygon  # noqa: E402
 

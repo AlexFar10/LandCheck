@@ -23,6 +23,19 @@ from landcheck.api.models import Health, Layer, LayersResponse
 log = logging.getLogger(__name__)
 
 BBOX_MESSAGE = "bbox must be west,south,east,north in WGS84."
+# Manifest layer fields that GET /api/v1/layers serves as they are (PRD 12.4).
+SERVED_LAYER_FIELDS = {
+    "title",
+    "hazard_type",
+    "default_visible",
+    "observation_date",
+    "sensor",
+    "source_name",
+    "attribution",
+    "meaning",
+    "limitations",
+    "legend",
+}
 
 
 def git_commit() -> str:
@@ -121,12 +134,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return LayersResponse(
             layers=[
                 Layer(
-                    **layer.meta.model_dump(exclude={"layer_id", "source_url"}),
+                    # Only the Section 12.4 fields. Provenance stays in the manifest.
+                    **layer.meta.model_dump(include=SERVED_LAYER_FIELDS),
                     id=layer.meta.layer_id,
                     source_url=str(layer.meta.source_url),
                     feature_count=len(layer.zones),
                     coverage=layer.coverage_geometry,
-                    method_version=manifest.method_version,
+                    method_version=manifest.method_version_of(layer.meta),
                     dataset_version=manifest.dataset_version,
                     sample=manifest.sample,
                 )

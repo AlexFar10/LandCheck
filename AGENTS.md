@@ -18,6 +18,7 @@ Land Check is a map-first geographic hazard screening tool for insurance agencie
 | Delivery constraints and team split (authoritative if sources conflict) | [`docs/Land_Check_PRD_Addendum_2_Week_MVP.md`](docs/Land_Check_PRD_Addendum_2_Week_MVP.md) |
 | Scientific method and data background | [`docs/deep-research-report.md`](docs/deep-research-report.md) |
 | Python module contract | [`README.md`](README.md) |
+| Layer format, cell grid and coverage rules for every dataset | [`docs/LAYER_FORMAT.md`](docs/LAYER_FORMAT.md) |
 | Pull, set up and run the project | [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) |
 | Coolify deployment, rollback and CI | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Task for the agent on the VPS | [`docs/VPS_AGENT_TASK.md`](docs/VPS_AGENT_TASK.md) |
@@ -68,12 +69,15 @@ npm run lint && npm test && npm run build
 
 ```text
 config/thresholds.yaml   Versioned thresholds, currently unvalidated placeholders
+config/grid.yaml         Analysis grid for module layers (docs/LAYER_FORMAT.md)
 docs/                    PRD, addendum and research
 landcheck/core/          Shared parcel, Sentinel-2, output and config code
 landcheck/modules/       Hazard modules
 landcheck/pipeline.py    Runs all modules on one parcel
 tests/                   Pytest suite for landcheck/
 landcheck/api/           FastAPI app (PRD Section 12) and its sample fixture
+landcheck/grid.py        Grid cells and the per-cell zone rule
+landcheck/dataset_files.py  Writes dataset folders with counts and checksums
 web/                     React + Vite + MapLibre map
 index.html               Current "under construction" page
 ```
@@ -129,6 +133,8 @@ GET /api/v1/zones/{id}
 ```
 
 Zone fields: `id`, `geometry`, `hazard_type`, `classification`, `measurement`, `unit`, `observation_date`, `source_name`, `source_url`, `coverage_status`, `method_version`. `classification`, `measurement` and `unit` are nullable. Render null as "Not available," never as `0`.
+
+Every layer, from any module, uses the shared format in [`docs/LAYER_FORMAT.md`](docs/LAYER_FORMAT.md): the manifest fields and checksums, the zone rules, `coverage_status` (only `observed` and `not_observed` are stored), and the 200 m grid in `config/grid.yaml` for module layers. `load_dataset` enforces it.
 
 If the contract must change, update the PRD, backend and frontend in the same PR.
 

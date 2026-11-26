@@ -10,6 +10,7 @@ dataset and must never be shown as a result.
 - `classification`, `measurement` and `unit` are `null` on purpose, so the UI has to render
   "Not available".
 
-The folder uses the dataset layout from PRD Section 7.4 (`manifest.json`, `coverage.geojson`,
-`layers/<layer_id>.geojson`). The API serves it when `LANDCHECK_DATASET_DIR` is unset. Once the
+The folder uses the shared layer format (`docs/LAYER_FORMAT.md`, PRD Section 7.4 (`manifest.json`, `coverage.geojson`,
+`layers/<layer_id>.geojson`). The manifest holds the SHA-256 of `coverage.geojson` and of each
+layer file, so after editing a fixture file update its checksum (`sha256sum <file>`). The API serves it when `LANDCHECK_DATASET_DIR` is unset. Once the
 pilot dataset exists (LC-15), set `LANDCHECK_DATASET_DIR=datasets/pilot-pechea/v1`.

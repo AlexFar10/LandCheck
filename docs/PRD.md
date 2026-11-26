@@ -322,6 +322,8 @@ datasets/
 
 Published dataset versions are immutable. Any data change creates a new version directory.
 
+The full field list, checksums, zone rules and the cell grid for module layers are in [LAYER_FORMAT.md](LAYER_FORMAT.md) (issue #23). The API loader enforces them.
+
 **Manifest shape:**
 
 ```json

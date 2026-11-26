@@ -1,0 +1,20 @@
+# Analysis grids for module layers (flood, ground stability, land use).
+# Format and rules: docs/LAYER_FORMAT.md. Code: landcheck/grid.py.
+#
+# A published grid never changes. To change the cell size, CRS or extent, add a new grid with
+# a new grid_id and build new dataset versions on it. Layers name their grid in manifest.json.
+
+grids:
+  galati-utm35n-200m-v1:
+    crs: "EPSG:32635"          # UTM zone 35N. All of Galati County lies in zone 35 (24-30 E).
+    cell_size_m: 200           # A whole number of 10 m and 20 m Sentinel-1/-2 pixels per cell.
+    # Cells are anchored to the CRS origin: a cell's lower-left corner is a multiple of
+    # cell_size_m. Cell IDs therefore do not depend on the extent below.
+    # Extent in EPSG:32635 metres (multiples of cell_size_m): 453 x 533 = 241,449 cells.
+    # It is the envelope 27.15-28.30 E, 45.30-46.25 N, projected and rounded outward. That
+    # envelope is a generous box around Galati County, NOT the county boundary. Clip to an
+    # official boundary at ingest once one is pinned.
+    extent_m: [511400, 5016200, 602000, 5122800]   # min_x, min_y, max_x, max_y
+    # A cell becomes a zone only if the source's valid data covers at least this share of it.
+    # Cells below it are left out, so they fall outside the layer's coverage (no_coverage).
+    min_valid_share: 0.5

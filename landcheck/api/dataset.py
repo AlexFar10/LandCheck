@@ -1,9 +1,11 @@
 """Load a dataset folder (PRD Section 7.4) and answer zone queries.
 
 Layout: manifest.json, coverage.geojson (one feature per layer, properties.layer_id) and
-layers/<layer_id>.geojson. Any missing, extra or inconsistent file is an error.
+layers/<layer_id>.geojson. Any missing, extra or inconsistent file is an error. The rules
+checked here are the shared layer format in docs/LAYER_FORMAT.md.
 """
 
+import hashlib
 import json
 import math
 from dataclasses import dataclass
@@ -15,6 +17,11 @@ from shapely.geometry import box, shape
 from shapely.geometry.base import BaseGeometry
 
 from landcheck.api.models import LayerMeta, Manifest, QueryCoverage, ZoneProperties
+from landcheck.grid import Grid, GridError, load_grid
+
+# Zones may stick out of their coverage by this much (degrees, about 0.1 m), the precision
+# ingest snaps coordinates to.
+COVERAGE_TOLERANCE_DEG = 1e-6
 
 BBox = tuple[float, float, float, float]
 
@@ -73,12 +80,15 @@ def _coverage(layer: LoadedLayer, query: BaseGeometry) -> QueryCoverage:
     return "none"
 
 
-def _read_json(path: Path) -> Any:
+def _read_json(path: Path, sha256: str | None = None) -> Any:
     if not path.is_file():
         raise DatasetError(f"Missing dataset file: {path}")
+    data = path.read_bytes()
+    if sha256 is not None and hashlib.sha256(data).hexdigest() != sha256:
+        raise DatasetError(f"Checksum mismatch for {path}")
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+        return json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise DatasetError(f"Invalid JSON in {path}: {exc}") from exc
 
 
@@ -109,7 +119,8 @@ def _load(root: Path) -> Dataset:
         raise DatasetError("Duplicate layer_id in manifest.json")
 
     coverage_by_layer: dict[str, Any] = {}
-    for feature in _read_json(root / "coverage.geojson").get("features", []):
+    coverage_file = _read_json(root / "coverage.geojson", manifest.coverage_sha256)
+    for feature in coverage_file.get("features", []):
         layer_id = (feature.get("properties") or {}).get("layer_id")
         if layer_id in coverage_by_layer:
             raise DatasetError(f"coverage.geojson has two features for {layer_id}")
@@ -125,8 +136,17 @@ def _load(root: Path) -> Dataset:
     zones: dict[str, tuple[Zone, LoadedLayer]] = {}
     for meta in manifest.layers:
         path = root / "layers" / f"{meta.layer_id}.geojson"
+        features = _read_json(path, meta.output_sha256).get("features", [])
+        if len(features) != meta.feature_count:
+            raise DatasetError(
+                f"{path} has {len(features)} features, manifest says {meta.feature_count}"
+            )
+        cov = coverage_by_layer[meta.layer_id]
+        cov_shape = _geometry(cov, f"coverage.geojson {meta.layer_id}")
+        cov_limit = cov_shape.buffer(COVERAGE_TOLERANCE_DEG)
+        grid = _grid(meta)
         layer_zones: list[Zone] = []
-        for feature in _read_json(path).get("features", []):
+        for feature in features:
             zone_id = feature.get("id")
             where = f"{path} feature {zone_id}"
             if not isinstance(zone_id, str) or not zone_id:
@@ -134,9 +154,12 @@ def _load(root: Path) -> Dataset:
             props = ZoneProperties.model_validate(feature.get("properties"))
             _check_props(props, meta, manifest, where)
             geom = _geometry(feature.get("geometry"), where)
+            if not geom.within(cov_limit):
+                raise DatasetError(f"{where}: geometry is outside its layer coverage")
+            if grid is not None:
+                _check_cell(grid, meta.layer_id, zone_id, geom, where)
             layer_zones.append(Zone(zone_id, feature["geometry"], geom, props))
-        cov = coverage_by_layer[meta.layer_id]
-        layer = LoadedLayer(meta, cov, _geometry(cov, "coverage.geojson"), tuple(layer_zones))
+        layer = LoadedLayer(meta, cov, cov_shape, tuple(layer_zones))
         layers[meta.layer_id] = layer
         for zone in layer_zones:
             if zone.id in zones:
@@ -145,10 +168,37 @@ def _load(root: Path) -> Dataset:
     return Dataset(manifest, layers, zones)
 
 
+def _grid(meta: LayerMeta) -> Grid | None:
+    if meta.grid_id is None:
+        return None
+    try:
+        return load_grid(meta.grid_id)
+    except (GridError, OSError) as exc:
+        raise DatasetError(f"Layer {meta.layer_id}: {exc}") from exc
+
+
+def _check_cell(grid: Grid, layer_id: str, zone_id: str, geom: BaseGeometry, where: str) -> None:
+    prefix = f"{layer_id}-"
+    if not zone_id.startswith(prefix):
+        raise DatasetError(f"{where}: grid zone ids must be {prefix}<cell_id>")
+    try:
+        expected = shape(grid.cell_geometry(zone_id[len(prefix) :]))
+    except GridError as exc:
+        raise DatasetError(f"{where}: {exc}") from exc
+    if not geom.equals_exact(expected, tolerance=COVERAGE_TOLERANCE_DEG):
+        raise DatasetError(f"{where}: geometry is not the polygon of its grid cell")
+
+
 def _check_props(props: ZoneProperties, meta: LayerMeta, manifest: Manifest, where: str) -> None:
+    # Every zone repeats its layer's evidence fields, so each one is traceable on its own
+    # (AGENTS.md rule 5). They must agree with the manifest.
     expected = {
         "layer_id": meta.layer_id,
         "hazard_type": meta.hazard_type,
+        "observation_date": meta.observation_date,
+        "source_name": meta.source_name,
+        "source_url": meta.source_url,
+        "method_version": manifest.method_version_of(meta),
         "dataset_version": manifest.dataset_version,
         "sample": manifest.sample,
     }

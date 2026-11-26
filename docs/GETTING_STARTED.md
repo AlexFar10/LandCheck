@@ -43,7 +43,7 @@ pytest
 python -m landcheck.pipeline
 ```
 
-You should see **43 passed**: the core tests and the API tests. The pipeline prints four results with level `Unknown`, which is correct until the modules are built.
+You should see **106 passed**: the core tests, the API tests and the layer format tests. The pipeline prints four results with level `Unknown`, which is correct until the modules are built.
 
 The `dev` extra includes the API dependencies (`api` extra), so one install covers both.
 

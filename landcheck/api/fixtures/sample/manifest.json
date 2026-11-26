@@ -3,6 +3,10 @@
   "dataset_version": "fixture-0",
   "method_version": "fixture-0",
   "sample": true,
+  "created_at": "2026-11-26T00:00:00Z",
+  "code_commit": "hand-written fixture, no ingest run",
+  "pilot_crs_metric": "EPSG:32635",
+  "coverage_sha256": "2f861c88c37f3191eb5771fb45570c564f5ab942e20462fe0248313c843a7cc4",
   "layers": [
     {
       "layer_id": "sample_flood_history_v0",
@@ -21,7 +25,9 @@
       ],
       "legend": [
         { "label": "Sample polygon (not real)", "color": "#9333EA" }
-      ]
+      ],
+      "feature_count": 2,
+      "output_sha256": "d5b4404d6a98e6246005050a0960ed317077772ab5a0cd21fa078a8aa810e4c9"
     }
   ]
 }

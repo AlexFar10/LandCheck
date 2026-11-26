@@ -214,37 +214,17 @@ def test_missing_dataset_returns_503(tmp_path):
     )
 
 
-def copy_fixture(tmp_path):
+def test_corrupted_dataset_returns_503(tmp_path):
+    # The format rules themselves are tested in tests/test_dataset.py.
     root = tmp_path / "dataset"
     shutil.copytree(SAMPLE_DATASET_DIR, root)
-    return root
-
-
-def test_dataset_rejects_measurement_without_unit(tmp_path):
-    root = copy_fixture(tmp_path)
-    path = root / "layers" / f"{LAYER_ID}.geojson"
-    data = json.loads(path.read_text(encoding="utf-8"))
-    data["features"][0]["properties"]["measurement"] = 1.5
-    path.write_text(json.dumps(data), encoding="utf-8")
-    client = TestClient(create_app(Settings(dataset_dir=root)))
-    assert client.get("/health").status_code == 503
-
-
-def test_dataset_rejects_feature_marked_real_in_sample_dataset(tmp_path):
-    root = copy_fixture(tmp_path)
     path = root / "layers" / f"{LAYER_ID}.geojson"
     data = json.loads(path.read_text(encoding="utf-8"))
     data["features"][0]["properties"]["sample"] = False
-    path.write_text(json.dumps(data), encoding="utf-8")
+    path.write_bytes(json.dumps(data).encode("utf-8"))
     client = TestClient(create_app(Settings(dataset_dir=root)))
     assert client.get("/health").status_code == 503
-
-
-def test_dataset_rejects_layer_file_not_in_manifest(tmp_path):
-    root = copy_fixture(tmp_path)
-    (root / "layers" / "extra.geojson").write_text('{"features": []}', encoding="utf-8")
-    client = TestClient(create_app(Settings(dataset_dir=root)))
-    assert client.get("/health").status_code == 503
+    assert_error(client.get("/api/v1/layers"), 503, "DATASET_UNAVAILABLE")
 
 
 def test_unexpected_error_hides_details():
